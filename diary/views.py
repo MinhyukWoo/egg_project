@@ -29,4 +29,22 @@ def feedback(request: HttpRequest):
     Feedback 페이지를 보여주는 view
     먼지와 나눈 대화를 바탕으로 AI가 판단한 피드백을 알려준다.
     """
-    return render(request, "diary/feedback.html")
+    # TODO: class 번호(정수)에 대응하는 감정 키워드 정의하기
+    classToEmotionWord = {
+        0: {"명사": "슬픔", "ㄹ": "슬플", "과거형어간": "슬펐"},
+        1: {"명사": "기쁨", "ㄹ": "기쁠", "과거형어간": "기뻤"},
+    }
+
+    import random
+
+    resultClass = random.randint(0, len(classToEmotionWord) - 1)  # test를 위해 무작위 값 설정
+    emotionWord = classToEmotionWord[resultClass]
+    resultEmotion = emotionWord["과거형어간"]
+    # TODO: 웹 크롤링 코드 구현하기
+    # TODO: 윀 크롤링 할 때 검색할 키워드 정하기
+    searchKeyword = emotionWord["ㄹ"] + " 때 보는 영상"
+    return render(
+        request,
+        "diary/feedback.html",
+        {"emotion": resultEmotion, "searchKeyword": searchKeyword},
+    )
