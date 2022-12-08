@@ -1,3 +1,76 @@
 {% extends 'diary/base.html' %} {% block content %}
-<h2>This is chatting page.</h2>
+<h2>채팅 페이지</h2>
+<div id="chattingLog"></div>
+<div>
+  <textarea
+    name="MessageInput"
+    id="messageTextInput"
+    cols="30"
+    rows="1"
+  ></textarea>
+  <input type="button" value="전송" id="messageSendButton" />
+</div>
+
+<script>
+  const chattingLog = document.getElementById("chattingLog");
+  const messageTextInput = document.getElementById("messageTextInput");
+  const messageSendButton = document.getElementById("messageSendButton");
+  const questionTexts = {{questions | safe}}.reverse();  // 등록된 질문들 가져오기
+  const answersTexts = [];
+
+  // 채팅 로그에 메시지를 보여주는 함수
+  function showMessage(messageText, senderName) {
+    const message = document.createElement("p");
+    message.textContent = senderName + ": " + messageText;
+    chattingLog.appendChild(message);
+  }
+
+  // 질문을 메시지로 보내는 함수
+  function sendQuestion() {
+    const questionText = questionTexts.pop();
+    if (questionText != undefined) {
+      showMessage(questionText, "먼지");
+    }
+  }
+
+  // 질문이 모두 끝났으면 true인 함수
+  function isQuestionDone() {
+    return questionTexts.length == 0;
+  }
+
+  // 채팅을 마치는 안내 및 피드백 페이지 링크를 메시지로 보내는 함수
+  function sendClosingMessage() {
+    const closeMessage = document.createElement("p");
+    closeMessage.textContent = "===== 채팅 종료 =====";
+    chattingLog.appendChild(closeMessage);
+    const feedbackLink = document.createElement("a");
+    feedbackLink.setAttribute("href", "feedback");
+    feedbackLink.textContent = "피드백 페이지로 이동하기";
+    chattingLog.appendChild(feedbackLink);
+  }
+
+  // 모델의 inference를 위해 서버에 채팅 기록을 보내는 함수
+  function sendChattingLogToServer() {
+    console.log(answersTexts);
+    // TODO: 우리 장고 서버에 answersTexts를 전달
+  }
+
+  // 사용자의 답변을 메시지로 보내는 함수
+  function sendAnswer() {
+    const text = messageTextInput.value;
+    messageTextInput.value = "";
+    answersTexts.push(text);
+    showMessage(text, "나");
+    if (!isQuestionDone()) {
+      sendQuestion();
+    } else {
+      sendChattingLogToServer();
+      sendClosingMessage();
+      messageSendButton.onclick = undefined;
+    }
+  }
+
+  sendQuestion(); // 첫번째 질문 전송
+  messageSendButton.onclick = sendAnswer; // 버튼 클릭 리스너 등록
+</script>
 {% endblock content %}
